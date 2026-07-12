@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EOS 계약계산기</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>EOS 계약계산기</h1>
+
+<div class="card">
+
+<label>업체명</label>
+<input id="company" type="text" placeholder="업체명을 입력">
+
+<label>대표자</label>
+<input id="owner" type="text" placeholder="대표자">
+
+<label>담당자</label>
+<input id="manager" type="text" placeholder="담당자">
+
+</div>
+
+<div class="card">
+
+<label>제품 선택</label>
+
+<select id="productSelect">
+</select>
+
+<label>수량</label>
+
+<input
+id="qty"
+type="number"
+value="1"
+min="1">
+
+<button id="addBtn">
+
+추가하기
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>계약 목록</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>제품</th>
+
+<th>수량</th>
+
+<th>총금액</th>
+
+<th>월납입금</th>
+
+<th>지원금</th>
+
+<th></th>
+
+</tr>
+
+</thead>
+
+<tbody id="contractList">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+총 계약금
+
+</h2>
+
+<p id="totalPrice">
+
+0원
+
+</p>
+
+<h2>
+
+월 납입금
+
+</h2>
+
+<p id="monthlyPayment">
+
+0원
+
+</p>
+
+<h2>
+
+지원금
+
+</h2>
+
+<p id="supportMoney">
+
+0원
+
+</p>
+
+</div>
+
+<div class="buttons">
+
+<button id="saveBtn">
+
+저장
+
+</button>
+
+<button id="pdfBtn">
+
+PDF 출력
+
+</button>
+
+<button id="resetBtn">
+
+초기화
+
+</button>
+
+</div>
+
+</div>
+
+<script src="products.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
