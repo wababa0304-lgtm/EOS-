@@ -1,187 +1,411 @@
-<!DOCTYPE html>
-<html lang="ko">
+// =====================
+// EOS 계약계산기(렌탈)
+// script.js
+// 업셀 합산 방식 적용 최종
+// =====================
 
-<head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+const productSelect = document.getElementById("productSelect");
+const qtyInput = document.getElementById("qty");
+const contractList = document.getElementById("contractList");
 
-<title>EOS 계약계산기</title>
+const totalPrice = document.getElementById("totalPrice");
+const monthlyPayment = document.getElementById("monthlyPayment");
+const supportMoney = document.getElementById("supportMoney");
 
-<link rel="stylesheet" href="style.css">
+const originPrice = document.getElementById("originPrice");
+const customPrice = document.getElementById("customPrice");
 
-</head>
+const upsellInput = document.getElementById("upsell");
+const discountInput = document.getElementById("discount");
 
 
-<body>
+let contracts = [];
 
 
-<div class="container">
 
 
-<h1>EOS 계약계산기</h1>
+// 제품 목록 생성
 
+function loadProducts(){
 
+    productSelect.innerHTML = "";
 
-<div class="card">
 
+    products.forEach((product,index)=>{
 
-<label>업체명</label>
+        const option =
+            document.createElement("option");
 
-<input id="company" type="text" placeholder="업체명">
 
+        option.value = index;
 
-<label>대표자</label>
+        option.textContent =
+            product.name;
 
-<input id="owner" type="text" placeholder="대표자">
 
+        productSelect.appendChild(option);
 
-<label>담당자</label>
+    });
 
-<input id="manager" type="text" placeholder="담당자">
 
+    showPrice();
 
-</div>
+}
 
 
 
 
-<div class="card">
 
+// 선택 제품 표시
 
-<h2>제품 추가</h2>
+function showPrice(){
 
+    const product =
+        products[productSelect.value];
 
-<label>제품 선택</label>
 
-<select id="productSelect"></select>
+    if(product){
 
+        originPrice.innerHTML =
+            product.monthly.toLocaleString()
+            + "원";
 
+    }
 
-<label>수량</label>
+}
 
-<input
-id="qty"
-type="number"
-value="1"
-min="1">
 
 
 
 
+productSelect.addEventListener(
+    "change",
+    showPrice
+);
 
-<h3>가격 조정</h3>
 
 
-<label>
-월 사용료 조정
-</label>
 
-<input
-id="customPrice"
-type="number"
-placeholder="기본값 사용">
 
 
-<p>
-기본 월 사용료 :
-<span id="originPrice">0원</span>
-</p>
+// PMT 계산
 
+function PMT(rate,nper,pv){
 
+    if(rate === 0){
 
+        return pv / nper;
 
+    }
 
-<h3>업셀</h3>
 
+    return (
+        rate * pv
+    )
+    /
+    (
+        1 - Math.pow(1+rate,-nper)
+    );
 
-<label>
-업셀 금액
-</label>
+}
 
 
-<input
-id="upsell"
-type="number"
-value="0"
-placeholder="추가 금액">
 
 
 
 
-<h3>할인</h3>
 
+// 금액 표시
 
-<label>
-할인 금액
-</label>
+function money(value){
 
+    return Math.round(value)
+    .toLocaleString("ko-KR")
+    + "원";
 
-<input
-id="discount"
-type="number"
-value="0"
-placeholder="할인 금액">
+}
 
 
 
 
 
-<button id="addBtn">
 
-추가하기
 
-</button>
+// 추가 버튼
 
+document
+.getElementById("addBtn")
+.addEventListener(
+    "click",
+    addProduct
+);
 
-</div>
 
 
 
 
 
-<div class="card">
 
 
-<h2>계약 목록</h2>
+function addProduct(){
 
 
-<table>
+    const product =
+        products[productSelect.value];
 
 
-<thead>
+
+    const qty =
+        Number(qtyInput.value);
+
+
+
+    if(qty <= 0){
+
+        alert("수량을 입력하세요.");
+
+        return;
+
+    }
+
+
+
+
+
+
+    // 월 사용료
+
+    let monthly =
+        product.monthly;
+
+
+
+
+
+    // 월 사용료 조정
+
+    if(customPrice.value){
+
+        monthly =
+            Number(customPrice.value);
+
+    }
+
+
+
+
+
+    // 업셀 금액
+
+    let upsell = 0;
+
+
+    if(upsellInput.value){
+
+        upsell =
+            Number(upsellInput.value);
+
+    }
+
+
+
+
+
+
+
+    // 할인 금액
+
+    let discount = 0;
+
+
+    if(discountInput.value){
+
+        discount =
+            Number(discountInput.value);
+
+    }
+
+
+
+
+
+
+
+    // 제품 원금
+
+    let productAmount =
+        monthly *
+        product.month *
+        qty;
+
+
+
+
+
+
+
+    // 최종 판매금액
+
+    let totalAmount =
+        productAmount
+        + upsell
+        - discount;
+
+
+
+
+
+
+    if(totalAmount < 0){
+
+        totalAmount = 0;
+
+    }
+
+
+
+
+
+
+
+    // 월 납입금
+
+    const payment =
+        PMT(
+            product.rate / 100 / 12,
+            product.month,
+            totalAmount
+        );
+
+
+
+
+
+
+
+    // 지원금 천원단위 버림
+
+    const support =
+        Math.floor(
+            (payment / 1.1) / 1000
+        )
+        * 1000;
+
+
+
+
+
+
+
+
+    contracts.push({
+
+        name: product.name,
+
+        qty: qty,
+
+        total: totalAmount,
+
+        payment: payment,
+
+        support: support
+
+    });
+
+
+
+
+
+
+    drawContracts();
+
+
+
+
+
+    // 입력 초기화
+
+    upsellInput.value = 0;
+
+    discountInput.value = 0;
+
+    customPrice.value = "";
+
+}
+
+
+
+
+
+
+
+
+
+// 계약 목록 출력
+
+function drawContracts(){
+
+
+    contractList.innerHTML = "";
+
+
+    let total = 0;
+
+    let payment = 0;
+
+    let support = 0;
+
+
+
+
+
+
+    contracts.forEach((item,index)=>{
+
+
+        total += item.total;
+
+        payment += item.payment;
+
+        support += item.support;
+
+
+
+
+
+
+        contractList.innerHTML += `
 
 <tr>
 
-<th>제품</th>
+<td>${item.name}</td>
 
-<th>수량</th>
+<td>${item.qty}</td>
 
-<th>판매금액</th>
+<td>${money(item.total)}</td>
 
-<th>월납입</th>
+<td>${money(item.payment)}</td>
 
-<th>지원금</th>
+<td>${money(item.support)}</td>
 
-<th>삭제</th>
+<td>
 
+<button onclick="removeProduct(${index})">
+
+삭제
+
+</button>
+
+</td>
 
 </tr>
 
-
-</thead>
-
-
-<tbody id="contractList">
+`;
 
 
-</tbody>
 
-
-</table>
-
-
-</div>
+    });
 
 
 
@@ -189,74 +413,50 @@ placeholder="할인 금액">
 
 
 
-<div class="card">
-
-
-<h2>계산 결과</h2>
-
-
-<h3>총 판매금액</h3>
-
-<p id="totalPrice">
-0원
-</p>
+    totalPrice.innerHTML =
+        money(total);
 
 
 
-<h3>총 월 납입금</h3>
-
-<p id="monthlyPayment">
-0원
-</p>
+    monthlyPayment.innerHTML =
+        money(payment);
 
 
 
-<h3>총 지원금</h3>
-
-<p id="supportMoney">
-0원
-</p>
+    supportMoney.innerHTML =
+        money(support);
 
 
 
-</div>
+}
 
 
 
 
 
-<div class="buttons">
-
-
-<button id="saveBtn">
-저장
-</button>
-
-
-<button id="pdfBtn">
-PDF 출력
-</button>
-
-
-<button id="resetBtn">
-초기화
-</button>
-
-
-</div>
-
-
-
-</div>
 
 
 
 
-<script src="products.js"></script>
+// 삭제
 
-<script src="script.js"></script>
+function removeProduct(index){
+
+    contracts.splice(index,1);
 
 
-</body>
+    drawContracts();
 
-</html>
+}
+
+
+
+
+
+
+
+
+
+// 시작
+
+loadProducts();
