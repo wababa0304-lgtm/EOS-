@@ -1,7 +1,7 @@
 // =====================
-// EOS 계약계산기(렌탈)
+// EOS 계약계산기
 // script.js
-// 업셀 합산 방식 적용 최종
+// 업셀 합산 + 지원금 합산 후 버림 최종
 // =====================
 
 
@@ -23,31 +23,23 @@ const discountInput = document.getElementById("discount");
 let contracts = [];
 
 
-
-
 // 제품 목록 생성
 
 function loadProducts(){
 
     productSelect.innerHTML = "";
 
-
     products.forEach((product,index)=>{
 
-        const option =
-            document.createElement("option");
-
+        const option = document.createElement("option");
 
         option.value = index;
 
-        option.textContent =
-            product.name;
-
+        option.textContent = product.name;
 
         productSelect.appendChild(option);
 
     });
-
 
     showPrice();
 
@@ -55,15 +47,11 @@ function loadProducts(){
 
 
 
-
-
 // 선택 제품 표시
 
 function showPrice(){
 
-    const product =
-        products[productSelect.value];
-
+    const product = products[productSelect.value];
 
     if(product){
 
@@ -76,15 +64,10 @@ function showPrice(){
 }
 
 
-
-
-
 productSelect.addEventListener(
     "change",
     showPrice
 );
-
-
 
 
 
@@ -113,9 +96,6 @@ function PMT(rate,nper,pv){
 
 
 
-
-
-
 // 금액 표시
 
 function money(value){
@@ -125,9 +105,6 @@ function money(value){
     + "원";
 
 }
-
-
-
 
 
 
@@ -144,16 +121,11 @@ document
 
 
 
-
-
-
-
 function addProduct(){
 
 
     const product =
         products[productSelect.value];
-
 
 
     const qty =
@@ -172,13 +144,10 @@ function addProduct(){
 
 
 
-
-
     // 월 사용료
 
     let monthly =
         product.monthly;
-
 
 
 
@@ -195,8 +164,7 @@ function addProduct(){
 
 
 
-
-    // 업셀 금액
+    // 업셀
 
     let upsell = 0;
 
@@ -211,10 +179,7 @@ function addProduct(){
 
 
 
-
-
-
-    // 할인 금액
+    // 할인
 
     let discount = 0;
 
@@ -229,18 +194,12 @@ function addProduct(){
 
 
 
-
-
-
     // 제품 원금
 
     let productAmount =
         monthly *
         product.month *
         qty;
-
-
-
 
 
 
@@ -254,17 +213,11 @@ function addProduct(){
 
 
 
-
-
-
     if(totalAmount < 0){
 
         totalAmount = 0;
 
     }
-
-
-
 
 
 
@@ -282,18 +235,10 @@ function addProduct(){
 
 
 
-
-
-    // 지원금 천원단위 버림
+    // 지원금 원본 저장 (여기서 버림하지 않음)
 
     const support =
-        Math.floor(
-            (payment / 1.1) / 1000
-        )
-        * 1000;
-
-
-
+        payment / 1.1;
 
 
 
@@ -316,10 +261,7 @@ function addProduct(){
 
 
 
-
-
     drawContracts();
-
 
 
 
@@ -333,10 +275,6 @@ function addProduct(){
     customPrice.value = "";
 
 }
-
-
-
-
 
 
 
@@ -359,8 +297,6 @@ function drawContracts(){
 
 
 
-
-
     contracts.forEach((item,index)=>{
 
 
@@ -369,8 +305,6 @@ function drawContracts(){
         payment += item.payment;
 
         support += item.support;
-
-
 
 
 
@@ -410,6 +344,12 @@ function drawContracts(){
 
 
 
+    // ★ 최종 합산 후 천원단위 버림
+
+    support =
+        Math.floor(support / 1000)
+        * 1000;
+
 
 
 
@@ -417,10 +357,8 @@ function drawContracts(){
         money(total);
 
 
-
     monthlyPayment.innerHTML =
         money(payment);
-
 
 
     supportMoney.innerHTML =
@@ -434,24 +372,15 @@ function drawContracts(){
 
 
 
-
-
-
-
 // 삭제
 
 function removeProduct(index){
 
     contracts.splice(index,1);
 
-
     drawContracts();
 
 }
-
-
-
-
 
 
 
