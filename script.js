@@ -1,7 +1,7 @@
 // =====================
 // EOS 계약계산기
 // script.js
-// 업셀 합산 + 지원금 합산 후 버림 최종
+// 업셀 합산 + 지원금 합산 후 버림 + 계약저장 최종
 // =====================
 
 
@@ -19,8 +19,12 @@ const customPrice = document.getElementById("customPrice");
 const upsellInput = document.getElementById("upsell");
 const discountInput = document.getElementById("discount");
 
+const savedList = document.getElementById("savedList");
+
 
 let contracts = [];
+
+
 
 
 // 제품 목록 생성
@@ -47,6 +51,7 @@ function loadProducts(){
 
 
 
+
 // 선택 제품 표시
 
 function showPrice(){
@@ -56,8 +61,8 @@ function showPrice(){
     if(product){
 
         originPrice.innerHTML =
-            product.monthly.toLocaleString()
-            + "원";
+        product.monthly.toLocaleString()
+        + "원";
 
     }
 
@@ -65,8 +70,8 @@ function showPrice(){
 
 
 productSelect.addEventListener(
-    "change",
-    showPrice
+"change",
+showPrice
 );
 
 
@@ -109,13 +114,13 @@ function money(value){
 
 
 
-// 추가 버튼
+// 제품 추가
 
 document
 .getElementById("addBtn")
 .addEventListener(
-    "click",
-    addProduct
+"click",
+addProduct
 );
 
 
@@ -125,11 +130,11 @@ function addProduct(){
 
 
     const product =
-        products[productSelect.value];
+    products[productSelect.value];
 
 
     const qty =
-        Number(qtyInput.value);
+    Number(qtyInput.value);
 
 
 
@@ -144,27 +149,20 @@ function addProduct(){
 
 
 
-    // 월 사용료
-
     let monthly =
-        product.monthly;
+    product.monthly;
 
 
-
-
-    // 월 사용료 조정
 
     if(customPrice.value){
 
         monthly =
-            Number(customPrice.value);
+        Number(customPrice.value);
 
     }
 
 
 
-
-    // 업셀
 
     let upsell = 0;
 
@@ -172,14 +170,12 @@ function addProduct(){
     if(upsellInput.value){
 
         upsell =
-            Number(upsellInput.value);
+        Number(upsellInput.value);
 
     }
 
 
 
-
-    // 할인
 
     let discount = 0;
 
@@ -187,29 +183,24 @@ function addProduct(){
     if(discountInput.value){
 
         discount =
-            Number(discountInput.value);
+        Number(discountInput.value);
 
     }
 
 
 
 
-    // 제품 원금
-
     let productAmount =
-        monthly *
-        product.month *
-        qty;
+    monthly *
+    product.month *
+    qty;
 
 
-
-
-    // 최종 판매금액
 
     let totalAmount =
-        productAmount
-        + upsell
-        - discount;
+    productAmount
+    + upsell
+    - discount;
 
 
 
@@ -222,24 +213,18 @@ function addProduct(){
 
 
 
-    // 월 납입금
-
     const payment =
-        PMT(
-            product.rate / 100 / 12,
-            product.month,
-            totalAmount
-        );
+    PMT(
+        product.rate / 100 / 12,
+        product.month,
+        totalAmount
+    );
 
 
 
-
-
-    // 지원금 원본 저장 (여기서 버림하지 않음)
 
     const support =
-        payment / 1.1;
-
+    payment / 1.1;
 
 
 
@@ -260,13 +245,9 @@ function addProduct(){
 
 
 
-
     drawContracts();
 
 
-
-
-    // 입력 초기화
 
     upsellInput.value = 0;
 
@@ -293,7 +274,6 @@ function drawContracts(){
     let payment = 0;
 
     let support = 0;
-
 
 
 
@@ -324,50 +304,38 @@ function drawContracts(){
 <td>${money(item.support)}</td>
 
 <td>
-
 <button onclick="removeProduct(${index})">
-
 삭제
-
 </button>
-
 </td>
 
 </tr>
 
 `;
 
-
-
     });
 
 
 
-
-    // ★ 최종 합산 후 천원단위 버림
-
     support =
-        Math.floor(support / 1000)
-        * 1000;
-
+    Math.floor(support / 1000)
+    * 1000;
 
 
 
     totalPrice.innerHTML =
-        money(total);
+    money(total);
 
 
     monthlyPayment.innerHTML =
-        money(payment);
+    money(payment);
 
 
     supportMoney.innerHTML =
-        money(support);
-
+    money(support);
 
 
 }
-
 
 
 
@@ -386,6 +354,246 @@ function removeProduct(index){
 
 
 
+// =====================
+// 저장 기능
+// =====================
+
+
+document
+.getElementById("saveBtn")
+.addEventListener(
+"click",
+saveContract
+);
+
+
+
+function saveContract(){
+
+
+    const data = {
+
+
+        id: Date.now(),
+
+
+        date:
+        new Date()
+        .toLocaleDateString("ko-KR"),
+
+
+        company:
+        document.getElementById("company").value
+        || "미입력",
+
+
+        owner:
+        document.getElementById("owner").value,
+
+
+        manager:
+        document.getElementById("manager").value,
+
+
+        contracts: contracts,
+
+
+        total:
+        totalPrice.innerText,
+
+
+        monthly:
+        monthlyPayment.innerText,
+
+
+        support:
+        supportMoney.innerText
+
+
+    };
+
+
+
+
+    let saved =
+    JSON.parse(
+        localStorage.getItem("eosSaved")
+    )
+    || [];
+
+
+
+    saved.push(data);
+
+
+
+    localStorage.setItem(
+        "eosSaved",
+        JSON.stringify(saved)
+    );
+
+
+
+    alert("저장되었습니다.");
+
+    drawSaved();
+
+}
+
+
+
+
+
+// 저장 목록 표시
+
+function drawSaved(){
+
+
+    if(!savedList) return;
+
+
+    savedList.innerHTML = "";
+
+
+    let saved =
+    JSON.parse(
+        localStorage.getItem("eosSaved")
+    )
+    || [];
+
+
+
+    saved.forEach(item=>{
+
+
+        savedList.innerHTML += `
+
+<tr>
+
+<td>${item.company}</td>
+
+<td>${item.date}</td>
+
+<td>${item.total}</td>
+
+<td>${item.monthly}</td>
+
+<td>
+
+<button onclick="loadContract(${item.id})">
+불러오기
+</button>
+
+
+<button onclick="deleteContract(${item.id})">
+삭제
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+    });
+
+
+}
+
+
+
+
+
+// 불러오기
+
+function loadContract(id){
+
+
+    let saved =
+    JSON.parse(
+        localStorage.getItem("eosSaved")
+    )
+    || [];
+
+
+
+    const data =
+    saved.find(
+        item=>item.id===id
+    );
+
+
+
+    if(!data) return;
+
+
+
+    document.getElementById("company").value =
+    data.company;
+
+
+    document.getElementById("owner").value =
+    data.owner;
+
+
+    document.getElementById("manager").value =
+    data.manager;
+
+
+
+    contracts =
+    data.contracts;
+
+
+
+    drawContracts();
+
+
+    alert("불러오기 완료");
+
+}
+
+
+
+
+
+// 저장 삭제
+
+function deleteContract(id){
+
+
+    let saved =
+    JSON.parse(
+        localStorage.getItem("eosSaved")
+    )
+    || [];
+
+
+
+    saved =
+    saved.filter(
+        item=>item.id!==id
+    );
+
+
+
+    localStorage.setItem(
+        "eosSaved",
+        JSON.stringify(saved)
+    );
+
+
+
+    drawSaved();
+
+}
+
+
+
+
+
 // 시작
 
 loadProducts();
+
+drawSaved();
