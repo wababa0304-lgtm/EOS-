@@ -216,3 +216,6 @@ const products = [
 }
 
 ];
+products.forEach(product => {
+    product.rate = 22;
+});
