@@ -597,3 +597,511 @@ function deleteContract(id){
 loadProducts();
 
 drawSaved();
+
+// =====================
+// 계약 목록 출력
+// =====================
+
+
+function drawContracts(){
+
+
+    contractList.innerHTML="";
+
+
+    let total=0;
+
+    let payment=0;
+
+    let support=0;
+
+
+
+
+    contracts.forEach((item,index)=>{
+
+
+        total += item.total;
+
+        payment += item.payment;
+
+        support += item.support;
+
+
+
+        contractList.innerHTML += `
+
+<tr>
+
+<td>${item.name}</td>
+
+<td>${item.qty}</td>
+
+<td>${money(item.total)}</td>
+
+<td>${money(item.payment)}</td>
+
+<td>${money(item.support)}</td>
+
+<td>
+
+<button onclick="removeProduct(${index})">
+
+삭제
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+
+
+    });
+
+
+
+
+
+    // ★ 지원금 전체 합산 후 천원단위 버림
+
+    support =
+    Math.floor(support/1000)
+    *1000;
+
+
+
+
+
+    totalPrice.innerHTML =
+    money(total);
+
+
+
+    monthlyPayment.innerHTML =
+    money(payment);
+
+
+
+    supportMoney.innerHTML =
+    money(support);
+
+
+
+}
+
+
+
+
+
+// =====================
+// 제품 삭제
+// =====================
+
+
+function removeProduct(index){
+
+
+    contracts.splice(index,1);
+
+
+    drawContracts();
+
+
+}
+
+
+
+
+
+
+// =====================
+// 저장 기능
+// =====================
+
+
+const saveBtn =
+document.getElementById("saveBtn");
+
+
+
+if(saveBtn){
+
+
+    saveBtn.addEventListener(
+        "click",
+        saveContract
+    );
+
+
+}
+
+
+
+
+function saveContract(){
+
+
+
+    if(contracts.length===0){
+
+
+        alert("저장할 계약 내용이 없습니다.");
+
+        return;
+
+    }
+
+
+
+
+    const data={
+
+
+
+        id:Date.now(),
+
+
+
+        date:
+        new Date()
+        .toLocaleDateString("ko-KR"),
+
+
+
+
+        company:
+        document.getElementById("company").value
+        ||"미입력",
+
+
+
+        owner:
+        document.getElementById("owner").value
+        ||"",
+
+
+
+        manager:
+        document.getElementById("manager").value
+        ||"",
+
+
+
+
+        contracts:contracts,
+
+
+
+        total:
+        totalPrice.innerText,
+
+
+
+        monthly:
+        monthlyPayment.innerText,
+
+
+
+        support:
+        supportMoney.innerText
+
+
+
+    };
+
+
+
+
+
+    let saved =
+    JSON.parse(
+        localStorage.getItem("eosSaved")
+    )
+    ||[];
+
+
+
+
+
+    saved.push(data);
+
+
+
+
+
+    localStorage.setItem(
+
+        "eosSaved",
+
+        JSON.stringify(saved)
+
+    );
+
+
+
+
+
+    alert("계약 저장 완료");
+
+
+
+    drawSaved();
+
+
+}
+
+
+
+
+
+
+
+// =====================
+// 저장 목록 표시
+// =====================
+
+
+function drawSaved(){
+
+
+    if(!savedList){
+
+        return;
+
+    }
+
+
+
+
+    savedList.innerHTML="";
+
+
+
+
+    let saved =
+
+    JSON.parse(
+
+        localStorage.getItem("eosSaved")
+
+    )
+    ||[];
+
+
+
+
+
+    saved.forEach(item=>{
+
+
+
+        savedList.innerHTML += `
+
+
+<tr>
+
+
+<td>${item.company}</td>
+
+
+<td>${item.date}</td>
+
+
+<td>${item.total}</td>
+
+
+<td>${item.monthly}</td>
+
+
+<td>
+
+
+<button onclick="loadContract(${item.id})">
+
+불러오기
+
+</button>
+
+
+
+<button onclick="deleteContract(${item.id})">
+
+삭제
+
+</button>
+
+
+
+</td>
+
+
+</tr>
+
+
+`;
+
+
+
+    });
+
+
+
+}
+
+
+
+
+
+
+// =====================
+// 저장 계약 불러오기
+// =====================
+
+
+function loadContract(id){
+
+
+
+    let saved =
+
+    JSON.parse(
+
+        localStorage.getItem("eosSaved")
+
+    )
+    ||[];
+
+
+
+
+
+    const data =
+
+    saved.find(
+
+        item=>item.id===id
+
+    );
+
+
+
+
+
+    if(!data){
+
+        return;
+
+    }
+
+
+
+
+
+    document.getElementById("company").value =
+    data.company;
+
+
+
+    document.getElementById("owner").value =
+    data.owner;
+
+
+
+    document.getElementById("manager").value =
+    data.manager;
+
+
+
+
+
+    contracts =
+    data.contracts;
+
+
+
+
+
+    drawContracts();
+
+
+
+    alert("계약 불러오기 완료");
+
+
+
+}
+
+
+
+
+
+
+// =====================
+// 저장 삭제
+// =====================
+
+
+function deleteContract(id){
+
+
+
+    let saved =
+
+    JSON.parse(
+
+        localStorage.getItem("eosSaved")
+
+    )
+    ||[];
+
+
+
+
+
+    saved =
+
+    saved.filter(
+
+        item=>item.id!==id
+
+    );
+
+
+
+
+
+    localStorage.setItem(
+
+        "eosSaved",
+
+        JSON.stringify(saved)
+
+    );
+
+
+
+
+
+    drawSaved();
+
+
+
+}
+
+
+
+
+
+
+// =====================
+// 실행
+// =====================
+
+
+loadProducts();
+
+
+drawSaved();
