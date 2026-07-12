@@ -193,7 +193,7 @@ const products = [
 
 {
     name:"인덕션솥밥",
-    monthly:275000,
+    monthly:275,
     month:48,
     rate:17,
     type:"normal"
